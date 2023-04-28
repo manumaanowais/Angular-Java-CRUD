@@ -2,9 +2,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { EmpAddEditComponent } from './emp-add-edit/emp-add-edit.component';
 import { EmployeeService } from './services/employee.service';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit {
 
   displayedColumns: string[] = [
     'id',
@@ -32,25 +32,25 @@ export class AppComponent implements OnInit{
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private _dialog:MatDialog, private _empService:EmployeeService){}
+  constructor(private _dialog: MatDialog, private _empService: EmployeeService) { }
   ngOnInit() {
-   this.getEmployeeList()
+    this.getEmployeeList()
   }
 
-  openAddEditEmpForm(){
+  openAddEditEmpForm() {
     const dialogRef = this._dialog.open(EmpAddEditComponent)
     dialogRef.afterClosed().subscribe({
-      next:(val) =>{
-        if(val){
+      next: (val) => {
+        if (val) {
           this.getEmployeeList()
         }
       },
     })
   }
 
-  getEmployeeList(){
+  getEmployeeList() {
     this._empService.getEmployees().subscribe({
-      next:(res) =>{
+      next: (res) => {
         this.dataSource = new MatTableDataSource(res)
         this.dataSource.sort = this.sort
         this.dataSource.paginator = this.paginator
@@ -68,40 +68,52 @@ export class AppComponent implements OnInit{
     }
   }
 
-  editEmployee(data:any){
-    const dialogRef = this._dialog.open(EmpAddEditComponent,{
+  editEmployee(data: any) {
+    const dialogRef = this._dialog.open(EmpAddEditComponent, {
       data,
     });
     dialogRef.afterClosed().subscribe({
-      next:(val) =>{
-        if(val){
+      next: (val) => {
+        if (val) {
           this.getEmployeeList()
         }
       },
     })
   }
 
-  deleteEmployee(id:number){
-    this._empService.deleteEmployee(id).subscribe({
-      next:(res) => {
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-              toast.addEventListener('mouseenter', Swal.stopTimer)
-              toast.addEventListener('mouseleave', Swal.resumeTimer)
-          }
-      })
-      Toast.fire({
-          icon: 'success',
-          title: 'Employee Deleted'
-      })
-        this.getEmployeeList()
-      },
-      error: console.log
+  deleteEmployee(id: number) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You want to delete employee with id : "+id,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this._empService.deleteEmployee(id).subscribe({
+          next: (res) => {
+            const Toast = Swal.mixin({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+              }
+            })
+            Toast.fire({
+              icon: 'success',
+              title: 'Employee Deleted'
+            })
+            this.getEmployeeList()
+          },
+          error: console.log
+        })
+      }
     })
   }
 
